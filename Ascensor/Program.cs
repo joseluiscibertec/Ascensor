@@ -135,7 +135,7 @@ namespace Ascensor
                 Imprimir(num);
                 InData();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw;
             }
@@ -228,7 +228,7 @@ namespace Ascensor
                 }
                 Console.WriteLine("El ascensor esta en piso: " + posicionActual);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw;
             }
@@ -270,7 +270,7 @@ namespace Ascensor
                     InData();
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw;
             }
