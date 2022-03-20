@@ -42,7 +42,7 @@ namespace Ascensor.WebAPI.Controllers
             }
         }
 
-        // GET: api/Ascensor/GetAll
+        // GET: api/Ascensor/GetAll/100
         [HttpGet]
         public Response<List<AscensorEntity>> GetAll()
         {

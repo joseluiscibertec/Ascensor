@@ -28,7 +28,7 @@ namespace Ascensor.WebAPI.Data.Repositories
         {
             return _context.Ascensors.ToList();
         }
-        public List<AscensorEntity> GetAll(int Coun_Id)
+        public List<AscensorEntity> GetAllSP(int Coun_Id)
         {
             List<AscensorEntity> list = new List<AscensorEntity>();
 

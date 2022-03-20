@@ -1,35 +1,28 @@
-﻿using System;
+﻿using Ascensor.WebAPI.DTO.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Ascensor
 {
     class Program
     {
-        private static List<Ascensor> ascensors = new List<Ascensor>();
+        private static List<AscensorEntity> ascensors = new List<AscensorEntity>();
         internal static int posicionActual = 1;
+        internal static int posicionSubjetivp = 1;
         internal static int posicionfuturo = 0;
         internal static int nummiubicacion = 0;
         internal static bool primeravez = true;
 
         static void Main(string[] args)
         {
-            ascensors.Add(new Ascensor { Piso = 1, MiUbicacion = false, Tiempo = 1, Estado = true });
-            ascensors.Add(new Ascensor { Piso = 2, MiUbicacion = false, Tiempo = 1, Estado = false });
-            ascensors.Add(new Ascensor { Piso = 3, MiUbicacion = false, Tiempo = 1, Estado = false });
-            ascensors.Add(new Ascensor { Piso = 4, MiUbicacion = false, Tiempo = 1, Estado = false });
-            ascensors.Add(new Ascensor { Piso = 5, MiUbicacion = false, Tiempo = 1, Estado = false });
-            ascensors.Add(new Ascensor { Piso = 6, MiUbicacion = false, Tiempo = 1, Estado = false });
-            ascensors.Add(new Ascensor { Piso = 7, MiUbicacion = false, Tiempo = 1, Estado = false });
-            ascensors.Add(new Ascensor { Piso = 8, MiUbicacion = false, Tiempo = 1, Estado = false });
-            ascensors.Add(new Ascensor { Piso = 9, MiUbicacion = false, Tiempo = 1, Estado = false });
-            ascensors.Add(new Ascensor { Piso = 10, MiUbicacion = false, Tiempo = 1, Estado = false });
-
+            ascensors = new CallRestAPI().GetAll();
             buildAscensor2();
         }
 
-        public static void buildAscensor(bool showTime, float time)
+        public static void buildAscensor(bool showTime, decimal time)
         {
             int contA = 1;
             Console.Clear();
@@ -39,7 +32,7 @@ namespace Ascensor
 
             foreach (var item in ascensors)
             {
-                if (item.Estado)
+                if (item.Asce_Estado)
                 {
                     Console.ForegroundColor = ConsoleColor.Green;
                     time = contA - 1;
@@ -49,7 +42,7 @@ namespace Ascensor
                 Console.WriteLine(" -------");
                 Console.WriteLine("|       |");
                 Console.WriteLine($"|  P{Convert.ToString(contA).PadLeft(2, '0')}  |");
-                if (item.Estado)
+                if (item.Asce_Estado)
                 {
                     Console.WriteLine("|  ---  |  <==");
                     Console.WriteLine("|  | |  |");
@@ -62,7 +55,7 @@ namespace Ascensor
                     Console.WriteLine(" -------");
                 }
 
-                if (item.Estado)
+                if (item.Asce_Estado)
                 {
                     Console.ResetColor();
                 }
@@ -80,7 +73,7 @@ namespace Ascensor
             Console.Write("Ingrese el número del Piso :");
 
             var input = Convert.ToInt32(Console.ReadLine());
-            if (input > ascensors.Count || input <= 0 || ascensors.Where(x => x.Piso == input && x.Estado == true).Any())
+            if (input > ascensors.Count || input <= 0 || ascensors.Where(x => x.Asce_Piso == input && x.Asce_Estado == true).Any())
             {
                 Console.WriteLine("El piso ingresado no es válido!!!");
                 Console.Write(Environment.NewLine);
@@ -101,18 +94,18 @@ namespace Ascensor
             else
             {
                 int cont = 1;
-                float seconds = 0;
+                decimal seconds = 0;
                 foreach (var item in ascensors)
                 {
-                    item.Estado = false;
-                    if (item.Piso == input)
+                    item.Asce_Estado = false;
+                    if (item.Asce_Piso == input)
                     {
-                        item.Estado = true;
+                        item.Asce_Estado = true;
                     }
 
-                    if (cont == item.Piso)
+                    if (cont == item.Asce_Piso)
                     {
-                        seconds = seconds + item.Tiempo;
+                        seconds = seconds + item.Asce_Tiempo;
                     }
 
                     cont = cont + 1;
@@ -127,10 +120,11 @@ namespace Ascensor
             try
             {
                 Random random = new Random();
-                int num = random.Next(1, ascensors.Count);
-                nummiubicacion = random.Next(1, ascensors.Count);
-
-                ascensors.Where(x => x.Piso == nummiubicacion).ToList().ForEach(s => s.MiUbicacion = true);
+                int num = 1;//random.Next(1, ascensors.Count);
+                nummiubicacion = 2;// random.Next(1, ascensors.Count);
+               // posicionfuturo = num;
+                ascensors.Where(x => x.Asce_Piso == num).ToList().ForEach(s => s.Asce_Estado = true);
+                ascensors.Where(x => x.Asce_Piso == nummiubicacion).ToList().ForEach(s => s.Asce_MiUbicacion = true);
 
                 Imprimir(num);
                 InData();
@@ -146,18 +140,18 @@ namespace Ascensor
             {
                 int n = 1;
                 int y = 1;
-                if (num != 0)
+                
+                
+                posicionfuturo = num;
+                if (posicionActual <= posicionfuturo)
                 {
-                    posicionfuturo = num;
-                    if (posicionActual <= posicionfuturo)
-                    {
-                        y = posicionfuturo - posicionActual;
-                    }
-                    else
-                    {
-                        y = posicionActual - posicionfuturo;
-                    }
+                  y = posicionfuturo - posicionActual;
                 }
+                else
+                {
+                  y = posicionActual - posicionfuturo;
+                }
+                
                 for (int i = 0; i < y; i++)
                 {
                     if (posicionfuturo > 0)
@@ -165,14 +159,14 @@ namespace Ascensor
                         cambioEstado(0);
                     }
                     int contA = ascensors.Count;
-                    Thread.Sleep(1000);
+                    //Thread.Sleep(1000);
                     Console.Clear();
                     Console.WriteLine("===============================");
                     Console.WriteLine("--------- Mi Ascensor ---------");
                     Console.WriteLine("===============================");
-                    foreach (var item in ascensors.OrderByDescending(x => x.Piso))
+                    foreach (var item in ascensors.OrderByDescending(x => x.Asce_Piso))
                     {
-                        if (item.Estado)
+                        if (item.Asce_Estado)
                         {
                             Console.ForegroundColor = ConsoleColor.Green;
                         }
@@ -181,19 +175,19 @@ namespace Ascensor
                         Console.WriteLine(" -------");
                         Console.WriteLine("|       |");
                         Console.WriteLine($"|  P{Convert.ToString(contA).PadLeft(2, '0')}  |");
-                        if (item.Estado && item.MiUbicacion)
+                        if (item.Asce_Estado && item.Asce_MiUbicacion)
                         {
                             Console.WriteLine("|  ---  |  <== [°]");
                             Console.WriteLine("|  | |  |");
                             Console.WriteLine(" __| |__");
                         }
-                        else if (item.Estado && !item.MiUbicacion)
+                        else if (item.Asce_Estado && !item.Asce_MiUbicacion)
                         {
                             Console.WriteLine("|  ---  |  <==");
                             Console.WriteLine("|  | |  |");
                             Console.WriteLine(" __| |__");
                         }
-                        else if (!item.Estado && item.MiUbicacion)
+                        else if (!item.Asce_Estado && item.Asce_MiUbicacion)
                         {
                             Console.WriteLine("|  ---  |  [°]");
                             Console.WriteLine("|  | |  |");
@@ -206,7 +200,7 @@ namespace Ascensor
                             Console.WriteLine(" -------");
                         }
 
-                        if (item.Estado)
+                        if (item.Asce_Estado)
                         {
                             Console.ResetColor();
                         }
@@ -217,14 +211,20 @@ namespace Ascensor
 
 
                 }
-                //Obtener posicion actual de ascensor
+                
                 if (num == 0)
                 {
                     posicionActual = 1;
+                    posicionSubjetivp = posicionActual;
                 }
                 else
                 {
+                    if (posicionActual == nummiubicacion)
+                    {
+                        nummiubicacion = posicionfuturo;
+                    }
                     posicionActual = posicionfuturo;
+                    posicionSubjetivp = posicionActual;
                 }
                 Console.WriteLine("El ascensor esta en piso: " + posicionActual);
             }
@@ -245,7 +245,7 @@ namespace Ascensor
                 var input = Convert.ToInt32(Console.ReadLine());
                 posicionfuturo = input;
                 primeravez = false;
-                if (input > ascensors.Count || input <= 0 || ascensors.Where(x => x.Piso == input && x.Estado == true).Any())
+                if (input > ascensors.Count || input <= 0 || ascensors.Where(x => x.Asce_Piso == input && x.Asce_Estado == true).Any())
                 {
                     Console.WriteLine("El piso ingresado no es válido!!!");
                     Console.Write(Environment.NewLine);
@@ -282,41 +282,36 @@ namespace Ascensor
             int w = 1;
             int cont = 1;
             bool asignado = false;
-            //ascensors.Where(x => x.Piso == nummiubicacion).ToList().ForEach(s => s.MiUbicacion = true);
-
+           
             foreach (var item in ascensors)
             {
-                if (primeravez == false)
-                {
-                    if (posicionfuturo == nummiubicacion)
-                    {
-                        nummiubicacion = posicionfuturo;
-                        item.MiUbicacion = true;
-                    }
-
-                }
 
                 if (asignado == false)
                 {
                     if (posicionActual < posicionfuturo)
                     {
-                        if (item.Estado)
+                        if (item.Asce_Estado)
                         {
-                            item.Estado = false;
+                            item.Asce_Estado = false;
                             if (primeravez == false)
                             {
-                                item.MiUbicacion = false;
+                                if (posicionActual == nummiubicacion)
+                                {
+                                    item.Asce_MiUbicacion = false;
+                                }                                   
                             }
-
                             z++;
                         }
-
                         if (y == 2)
                         {
-                            item.Estado = true;
+                            item.Asce_Estado = true;
                             if (primeravez == false)
                             {
-                                item.MiUbicacion = true;
+                                if (posicionActual == nummiubicacion)
+                                {
+                                    item.Asce_MiUbicacion = true;
+                                }
+
                             }
                             asignado = true;
                         }
@@ -332,24 +327,32 @@ namespace Ascensor
                     }
                     else
                     {
-
-                        if (item.Piso == posicionActual - 1)
+                        if (item.Asce_Piso == posicionSubjetivp - 1)
                         {
-                            item.Estado = true;
+                            item.Asce_Estado = true;
                             if (primeravez == false)
                             {
-                                item.MiUbicacion = true;
+                                if (posicionActual - 1 == nummiubicacion - 1)
+                                {
+                                    item.Asce_MiUbicacion = true;
+                                }
+
                             }
-                            posicionActual = posicionActual - 1;
+                            posicionSubjetivp = posicionSubjetivp - 1;
+                            //nummiubicacion = nummiubicacion - 1;
                             w++;
                         }
 
                         if (y == 2)
                         {
-                            item.Estado = false;
-                            if (primeravez == true)
+                            item.Asce_Estado = false;
+                            if (primeravez == false)
                             {
-                                item.MiUbicacion = false;
+
+                                if (posicionActual - 1 == nummiubicacion - 1)
+                                {
+                                    item.Asce_MiUbicacion = false;
+                                }
                             }
                             asignado = true;
                         }
@@ -362,12 +365,8 @@ namespace Ascensor
                         {
                             y = 1;
                         }
-
                     }
-
-
                 }
-
                 cont++;
             }
 
