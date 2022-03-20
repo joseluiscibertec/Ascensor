@@ -218,7 +218,7 @@ namespace Ascensor.WebAPI.Controllers
                 }
                 else
                 {
-                    return new Response<List<AscensorEntity>>(false, null, "No existe ningún regitro.", 1);
+                    return new Response<List<AscensorEntity>>(false, null, "No existe ningún piso regitrado.", 5);
                 }
             }
             catch (Exception ex)
