@@ -24,6 +24,10 @@ namespace Ascensor.WebAPI.Data.Repositories
         {
             return _context.Ascensors.Where(x => x.Asce_Id == Asce_Id).FirstOrDefault() ?? new AscensorEntity();
         }
+        public AscensorEntity GetByPiso(int Asce_Piso)
+        {
+            return _context.Ascensors.Where(x => x.Asce_Piso == Asce_Piso).FirstOrDefault() ?? new AscensorEntity();
+        }
         public List<AscensorEntity> GetAll()
         {
             return _context.Ascensors.ToList();
@@ -80,7 +84,7 @@ namespace Ascensor.WebAPI.Data.Repositories
         public int Update(AscensorEntity entity)
         {
             _context.Entry(entity).State = EntityState.Modified;
-            _context.Ascensors.Add(entity);
+            _context.Ascensors.Update(entity);
             _context.SaveChanges();
 
             return entity.Asce_Id;

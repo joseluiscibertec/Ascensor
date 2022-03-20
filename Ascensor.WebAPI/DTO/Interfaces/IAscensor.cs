@@ -6,6 +6,7 @@ namespace Ascensor.WebAPI.DTO.Interfaces
     public interface IAscensor
     {
         public AscensorEntity Get(int Asce_Id);
+        public AscensorEntity GetByPiso(int Asce_Piso);
         public List<AscensorEntity> GetAll();
         public int Insert(AscensorEntity entity);
         public int Update(AscensorEntity entity);
