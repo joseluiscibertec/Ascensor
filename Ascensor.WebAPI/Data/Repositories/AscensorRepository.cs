@@ -28,8 +28,14 @@ namespace Ascensor.WebAPI.Data.Repositories
         {
             return _context.Ascensors.Where(x => x.Asce_Piso == Asce_Piso).FirstOrDefault() ?? new AscensorEntity();
         }
-        public List<AscensorEntity> GetAll()
+        public List<AscensorEntity> GetAll(bool update = false)
         {
+            if (update)
+            {
+                var sql = $"UPDATE tb_Ascensor SET Asce_Estado = 0, Asce_MiUbicacion = 0, Asce_Recorrido = 0;";
+                _context.Database.ExecuteSqlRaw(sql);
+            }
+
             return _context.Ascensors.ToList();
         }
         public List<AscensorEntity> GetAllSP(int Coun_Id)

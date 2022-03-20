@@ -7,5 +7,6 @@
         public bool Asce_MiUbicacion { get; set; }
         public int Asce_Tiempo { get; set; }
         public bool Asce_Estado { get; set; }
+        public bool Asce_Recorrido { get; set; }
     }
 }
