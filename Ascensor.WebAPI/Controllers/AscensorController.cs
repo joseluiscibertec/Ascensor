@@ -16,7 +16,6 @@ namespace Ascensor.WebAPI.Controllers
     {
         // Instanciar al servicio
         private readonly IAscensor _service;
-        private static int _pisoActualAscensor = 0;
 
         public AscensorController(IAscensor service)
         {
@@ -45,7 +44,7 @@ namespace Ascensor.WebAPI.Controllers
             }
         }
 
-        // GET: api/Ascensor/GetAll/100
+        // GET: api/Ascensor/GetAll/
         [HttpGet]
         public Response<List<AscensorEntity>> GetAll()
         {
@@ -67,12 +66,11 @@ namespace Ascensor.WebAPI.Controllers
             }
         }
 
-        // GET: api/Ascensor/MoveFromInside/1/5
+        // GET: api/Ascensor/MoveFromInside/1/4
         [HttpGet("{Asce_PisoInicial}/{Asce_PisoFinal}")]
         public Response<List<AscensorEntity>> MoveFromInside(int Asce_PisoInicial, int Asce_PisoFinal)
         {
             string direccionAscensor = string.Empty;
-            _pisoActualAscensor = 0;
 
             try
             {
@@ -90,15 +88,30 @@ namespace Ascensor.WebAPI.Controllers
                     if (Asce_PisoFinal > list.Count) { return new Response<List<AscensorEntity>>(false, null, $"El piso final que ingresó no es válido(pisos disponibles hasta: {list.Count}).", 4); }
 
                     direccionAscensor = (Asce_PisoFinal < Asce_PisoInicial) ? "B" : "S";
-                    list = (direccionAscensor == "B") ? list.OrderByDescending(x => x.Asce_Piso).ToList() : list.OrderBy(x => x.Asce_Piso).ToList();
-
+                    //list = (direccionAscensor == "B") ? list.OrderByDescending(x => x.Asce_Piso).ToList() : list.OrderBy(x => x.Asce_Piso).ToList();
+                    int order = 1;
                     foreach (var item in list)
                     {
                         if (direccionAscensor == "B" && Asce_PisoFinal <= item.Asce_Piso || direccionAscensor == "S" && Asce_PisoFinal >= item.Asce_Piso)
                         {
-                            _pisoActualAscensor = item.Asce_Piso;
-                            Thread.Sleep(item.Asce_Tiempo * 1000);
-                            item.Asce_Recorrido = true;
+                            //Thread.Sleep(item.Asce_Tiempo * 1000);
+                            if (direccionAscensor == "B")
+                            {
+                                if (Asce_PisoInicial >= item.Asce_Piso)
+                                {
+                                    item.Asce_Recorrido = true;
+                                    item.Asce_OrdenR = order;
+                                    order++;
+                                }
+                            }
+                            else
+                            {
+                                item.Asce_Recorrido = true;
+                                item.Asce_OrdenR = order;
+                                order++;
+                            }
+
+
                             if (Asce_PisoFinal == item.Asce_Piso)
                             {
                                 item.Asce_MiUbicacion = true;
@@ -122,23 +135,51 @@ namespace Ascensor.WebAPI.Controllers
             }
         }
 
-        // GET: api/Ascensor/MoveFromOutside/1
-        [HttpGet("{Asce_Piso}")]
-        public Response<List<AscensorEntity>> MoveFromOutside(int Asce_Piso)
+        // GET: api/Ascensor/MoveFromOutside/1/4
+        [HttpGet("{Asce_PisoInicial}/{Asce_PisoFinal}")]
+        public Response<List<AscensorEntity>> MoveFromOutside(int Asce_PisoInicial, int Asce_PisoFinal)
         {
+            string direccionAscensor = string.Empty;
+
             try
             {
-                var list = _service.GetAll();
-                list.ForEach(s => { s.Asce_Estado = false; s.Asce_MiUbicacion = false; });
-                list.Where(x => x.Asce_Piso == Asce_Piso).ToList().ForEach(s => { s.Asce_Estado = true; s.Asce_MiUbicacion = true; });
+                #region  VALIDACIONES
 
+                if (Asce_PisoInicial == 0) { return new Response<List<AscensorEntity>>(false, null, "El piso inicial que ingresó no es válido.", 1); }
+                if (Asce_PisoFinal == 0) { return new Response<List<AscensorEntity>>(false, null, "El piso final que ingresó no es válido.", 2); }
+                if (Asce_PisoInicial == Asce_PisoFinal) { return new Response<List<AscensorEntity>>(false, null, "Ingrese un piso diferente a tu piso actual.", 3); }
+
+                #endregion
+
+                var list = _service.GetAll(true);
                 if (list.Count > 0)
                 {
+                    if (Asce_PisoFinal > list.Count) { return new Response<List<AscensorEntity>>(false, null, $"El piso final que ingresó no es válido(pisos disponibles hasta: {list.Count}).", 4); }
+
+                    direccionAscensor = (Asce_PisoFinal < Asce_PisoInicial) ? "B" : "S";
+                    list = (direccionAscensor == "B") ? list.OrderByDescending(x => x.Asce_Piso).ToList() : list.OrderBy(x => x.Asce_Piso).ToList();
+
+                    foreach (var item in list)
+                    {
+                        if (direccionAscensor == "B" && Asce_PisoFinal <= item.Asce_Piso || direccionAscensor == "S" && Asce_PisoFinal >= item.Asce_Piso)
+                        {
+                            Thread.Sleep(item.Asce_Tiempo * 1000);
+                            item.Asce_Recorrido = true;
+                            if (Asce_PisoFinal == item.Asce_Piso)
+                            {
+                                item.Asce_MiUbicacion = true;
+                                item.Asce_Estado = true;
+                            }
+
+                            var output = _service.Update(item);
+                        }
+                    }
+
                     return new Response<List<AscensorEntity>>(true, list, "OK", null);
                 }
                 else
                 {
-                    return new Response<List<AscensorEntity>>(false, null, "No existe ningún regitro.", 1);
+                    return new Response<List<AscensorEntity>>(false, null, "No existe ningún piso regitrado.", 5);
                 }
             }
             catch (Exception ex)
@@ -205,15 +246,7 @@ namespace Ascensor.WebAPI.Controllers
                 var list = _service.GetAll();
                 if (list.Count > 0)
                 {
-                    if (_pisoActualAscensor > 0)
-                    {
-                        list = list.Where(x => x.Asce_Piso == _pisoActualAscensor).ToList();
-                    }
-                    else
-                    {
-                        list = list.Where(x => x.Asce_Estado == true && x.Asce_MiUbicacion == true && x.Asce_Recorrido == true).ToList();
-                    }
-
+                    list = list.Where(x => x.Asce_Estado == true && x.Asce_MiUbicacion == true && x.Asce_Recorrido == true).ToList();
                     return new Response<List<AscensorEntity>>(true, list, "OK", null);
                 }
                 else

@@ -32,7 +32,7 @@ namespace Ascensor.WebAPI.Data.Repositories
         {
             if (update)
             {
-                var sql = $"UPDATE tb_Ascensor SET Asce_Estado = 0, Asce_MiUbicacion = 0, Asce_Recorrido = 0;";
+                var sql = $"UPDATE tb_Ascensor SET Asce_Estado = 0, Asce_MiUbicacion = 0, Asce_Recorrido = 0, Asce_OrdenR=0;";
                 _context.Database.ExecuteSqlRaw(sql);
             }
 

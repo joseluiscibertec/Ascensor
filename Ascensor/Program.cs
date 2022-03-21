@@ -1,24 +1,27 @@
 ﻿using Ascensor.WebAPI.DTO.Entities;
+using Ascensor.WebAPI.Helper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Ascensor
 {
     class Program
     {
         private static List<AscensorEntity> ascensors = new List<AscensorEntity>();
+        private static List<AscensorEntity> moveFromOutside = new List<AscensorEntity>();
         internal static int posicionActual = 1;
         internal static int posicionSubjetivp = 1;
         internal static int posicionfuturo = 0;
         internal static int nummiubicacion = 0;
         internal static bool primeravez = true;
 
+        internal static bool Asignado = false;
+
         static void Main(string[] args)
         {
-            ascensors = new CallRestAPI().GetAll();
+            //ascensors = new CallRestAPI().GetAll();
             buildAscensor2();
         }
 
@@ -119,15 +122,14 @@ namespace Ascensor
         {
             try
             {
-                Random random = new Random();
-                int num = 1;//random.Next(1, ascensors.Count);
-                nummiubicacion = 2;// random.Next(1, ascensors.Count);
-               // posicionfuturo = num;
-                ascensors.Where(x => x.Asce_Piso == num).ToList().ForEach(s => s.Asce_Estado = true);
-                ascensors.Where(x => x.Asce_Piso == nummiubicacion).ToList().ForEach(s => s.Asce_MiUbicacion = true);
+                Console.Write(Environment.NewLine);
 
-                Imprimir(num);
-                InData();
+                Console.Write("Ingrese el número del Piso Actual :");
+                var ubiPer = Convert.ToInt32(Console.ReadLine());
+                var ubiAsc = new RandomHelper().RandomGenerate(ascensors.Count);
+                moveFromOutside = new CallRestAPI().MoveFromOutside(ubiAsc, ubiPer);
+                dataEn();
+                
             }
             catch (Exception)
             {
@@ -140,18 +142,18 @@ namespace Ascensor
             {
                 int n = 1;
                 int y = 1;
-                
-                
+
+
                 posicionfuturo = num;
                 if (posicionActual <= posicionfuturo)
                 {
-                  y = posicionfuturo - posicionActual;
+                    y = posicionfuturo - posicionActual;
                 }
                 else
                 {
-                  y = posicionActual - posicionfuturo;
+                    y = posicionActual - posicionfuturo;
                 }
-                
+
                 for (int i = 0; i < y; i++)
                 {
                     if (posicionfuturo > 0)
@@ -211,7 +213,7 @@ namespace Ascensor
 
 
                 }
-                
+
                 if (num == 0)
                 {
                     posicionActual = 1;
@@ -240,11 +242,20 @@ namespace Ascensor
             {
                 Console.Write(Environment.NewLine);
 
-                Console.Write("Ingrese el número del Piso :");
+                Console.Write("Ingrese el número del Piso Actual :");
+                var inputpa = Convert.ToInt32(Console.ReadLine());
+                Console.Write("Ingrese el número del Piso Final:");
 
                 var input = Convert.ToInt32(Console.ReadLine());
                 posicionfuturo = input;
                 primeravez = false;
+
+                ascensors = new CallRestAPI().MoveFromInside(inputpa, input);
+                var ascensors2 = new CallRestAPI().ListOfPendingFloors(inputpa, input);
+                var Asce_Recorrido = ascensors2.Where(x => x.Asce_Piso == input).FirstOrDefault().Asce_Recorrido;
+                var ascensors3 = new CallRestAPI().GetCurrentFloor();
+                var Asce_Estado = ascensors3.FirstOrDefault().Asce_Estado;
+
                 if (input > ascensors.Count || input <= 0 || ascensors.Where(x => x.Asce_Piso == input && x.Asce_Estado == true).Any())
                 {
                     Console.WriteLine("El piso ingresado no es válido!!!");
@@ -282,7 +293,7 @@ namespace Ascensor
             int w = 1;
             int cont = 1;
             bool asignado = false;
-           
+
             foreach (var item in ascensors)
             {
 
@@ -298,7 +309,7 @@ namespace Ascensor
                                 if (posicionActual == nummiubicacion)
                                 {
                                     item.Asce_MiUbicacion = false;
-                                }                                   
+                                }
                             }
                             z++;
                         }
@@ -370,6 +381,141 @@ namespace Ascensor
                 cont++;
             }
 
+        }
+
+        public static void dataEn()
+        {
+            try
+            {
+     
+                Console.Write(Environment.NewLine);
+
+                Console.Write("Ingrese el número del Piso Actual :");
+                var inputpa = Convert.ToInt32(Console.ReadLine());
+                posicionActual = inputpa;
+                Console.Write("Ingrese el número del Piso que deseas ir :");
+
+                var input = Convert.ToInt32(Console.ReadLine());
+                posicionfuturo = input;
+                primeravez = false;
+
+                ascensors = new CallRestAPI().MoveFromInside(inputpa, input);
+
+                if (input > ascensors.Count || input <= 0)
+                {
+                    Console.WriteLine("El piso ingresado no es válido!!!");
+                    Console.Write(Environment.NewLine);
+
+                    Console.Write("¿Desea Continuar?");
+                    Console.Write("Ingrese SI o NO:");
+
+                    var confirm = Convert.ToString(Console.ReadLine());
+                    if (confirm.ToUpper() == "SI")
+                    {
+                        print(input);
+                        dataEn();
+                    }
+                    else
+                    {
+                        Environment.Exit(0);// exit
+                    }
+                }
+                else
+                {
+                    print(input);
+                    dataEn();
+                }
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+        public static void print(int num)
+        {
+            try
+            {
+                int n = 1;
+                int y = 1;
+                var ascensors2 = new CallRestAPI().ListOfPendingFloors(posicionActual, posicionfuturo);
+                var currentFloor = new CallRestAPI().GetCurrentFloor();
+
+                posicionfuturo = num;
+                if (posicionActual <= posicionfuturo)
+                {
+                    y = y + posicionfuturo - posicionActual;
+                }
+                else
+                {
+                    y = y + posicionActual - posicionfuturo;
+                    n = posicionActual;
+                }
+
+                for (int i = 1; i <= y; i++)
+                {
+                    Asignado = false;
+                    int contA = 1;// ascensors.Count;
+                    Thread.Sleep(2000);
+                    Console.Clear();
+                    Console.WriteLine("===============================");
+                    Console.WriteLine("--------- Mi Ascensor ---------");
+                    Console.WriteLine("===============================");
+                    foreach (var item in ascensors)
+                    {
+                        if (!Asignado)
+                        {
+                            if (item.Asce_OrdenR == n)
+                            {
+                                if (posicionActual < posicionfuturo)
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Green;
+                                    item.Asce_Recorrido = false;
+                                    n++;
+                                    Asignado = true;
+                                }
+                                else
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Green;
+                                    item.Asce_Recorrido = false;
+                                    n--;
+                                    Asignado = true;
+
+                                }
+
+                            }
+                        }
+
+                        Console.Write(Environment.NewLine);
+                        Console.WriteLine(" -------");
+                        Console.WriteLine("|       |");
+                        Console.WriteLine($"|  P{Convert.ToString(contA).PadLeft(2, '0')}  |");
+                        if (item.Asce_Estado && item.Asce_MiUbicacion)
+                        {
+                            Console.WriteLine("|  ---  |  <==");
+                            Console.WriteLine("|  | |  |");
+                            Console.WriteLine(" __| |__");
+                        }
+
+                        else
+                        {
+                            Console.WriteLine("|       |");
+                            Console.WriteLine("|       |");
+                            Console.WriteLine(" -------");
+                        }
+
+                        Console.ResetColor();
+
+                        contA = contA + 1;
+
+                    }
+                }
+                Console.WriteLine("El ascensor se encuentra en piso: " + currentFloor.FirstOrDefault().Asce_Piso);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
     }
 }

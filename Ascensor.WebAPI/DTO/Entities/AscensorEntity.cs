@@ -8,5 +8,6 @@
         public int Asce_Tiempo { get; set; }
         public bool Asce_Estado { get; set; }
         public bool Asce_Recorrido { get; set; }
+        public int Asce_OrdenR { get; set; }
     }
 }
