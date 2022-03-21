@@ -106,9 +106,13 @@ namespace Ascensor.WebAPI.Controllers
                             }
                             else
                             {
-                                item.Asce_Recorrido = true;
-                                item.Asce_OrdenR = order;
-                                order++;
+                                if (Asce_PisoInicial <= item.Asce_Piso)
+                                {
+                                    item.Asce_Recorrido = true;
+                                    item.Asce_OrdenR = order;
+                                    order++;
+                                }
+
                             }
 
 
